@@ -1,0 +1,18 @@
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=1|Source=..\QUTMS-PDM-V00\QUTMS-PDM-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDM-V00\QUTMS-PDM-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=9|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=8|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=7|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=6|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=5|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=4|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=3|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=DiagramHierarchy|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|Kind=Multi-board Schematic Module|Designator=2|Source=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
+Record=SubProject|SourceDocument=PDM-Master-S01-V00-PowerDistributionModule.MbsDoc|ProjectPath=..\QUTMS-PDMC-V00\QUTMS-PDMC-V00.PrjPcb
