@@ -28,7 +28,7 @@ DItemRevisionGUID=
 ReportSuppressedErrorsInMessages=0
 FSMCodingStyle=eFMSDropDownList_OneProcess
 FSMEncodingStyle=eFMSDropDownList_OneHot
-OutputPath=
+OutputPath=Project Outputs for QUTMS-PDM-V00
 LogFolderPath=
 ManagedProjectGUID=
 IncludeDesignInRelease=0
@@ -1565,7 +1565,7 @@ AddNetNetLabels=-1
 AddNetPorts=-1
 ShowComponentParameters=-1
 GlobalBookmarks=0
-ExportBOM=0
+ExportBOM=-1
 TemplateFilename=
 TemplateStoreRelative=-1
 PCB_PrintColor=1
@@ -1589,7 +1589,7 @@ SCH_HasExpandLogicalToPhysicalSheets=-1
 SaveSettingsToOutJob=-1
 
 [Generic_EDE]
-OutputDir=
+OutputDir=Project Outputs for QUTMS-PDM-V00
 
 [OutputGroup1]
 Name=Netlist Outputs
