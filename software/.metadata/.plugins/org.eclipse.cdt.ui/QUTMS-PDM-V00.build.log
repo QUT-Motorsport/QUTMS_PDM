@@ -1,0 +1,20 @@
+12:56:49 **** Incremental Build of configuration Debug for project QUTMS-PDM-V00 ****
+make -j4 all 
+arm-none-eabi-gcc "../Core/Src/bts7xx.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DUSE_HAL_DRIVER -DSTM32F302xC -DDEBUG -c -I../Core/Inc -I../Drivers/STM32F3xx_HAL_Driver/Inc -I../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I../Drivers/CMSIS/Include -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc -I../FATFS/Target -I../FATFS/App -I../Middlewares/Third_Party/FatFs/src -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/bts7xx.d" -MT"Core/Src/bts7xx.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/bts7xx.o"
+arm-none-eabi-gcc -o "QUTMS-PDM-V00.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\Users\zoejg\Documents\git\QUTMS\QUTMS_PDM_2020\software\QUTMS-PDM-V00\STM32F302VCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="QUTMS-PDM-V00.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: QUTMS-PDM-V00.elf
+ 
+arm-none-eabi-objdump -h -S  QUTMS-PDM-V00.elf  > "QUTMS-PDM-V00.list"
+arm-none-eabi-objcopy  -O binary  QUTMS-PDM-V00.elf  "QUTMS-PDM-V00.bin"
+arm-none-eabi-size   QUTMS-PDM-V00.elf 
+   text	   data	    bss	    dec	    hex	filename
+  41208	    316	   5812	  47336	   b8e8	QUTMS-PDM-V00.elf
+Finished building: default.size.stdout
+ 
+Finished building: QUTMS-PDM-V00.bin
+ 
+Finished building: QUTMS-PDM-V00.list
+ 
+
+12:56:51 Build Finished. 0 errors, 0 warnings. (took 2s.34ms)
+

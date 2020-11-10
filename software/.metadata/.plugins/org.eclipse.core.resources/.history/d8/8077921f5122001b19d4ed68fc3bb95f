@@ -1,0 +1,163 @@
+/** @file module.h
+ *
+ * @brief A description of the module’s purpose.
+ *
+ * @par
+ * COPYRIGHT NOTICE: (c) 2018 Barr Group.All rights reserved.
+ */
+
+#ifndef BTS7XX_H
+#define BTS7XX_H
+
+#include "spi.h"
+
+/** Diagnostic Registers
+ * WRNDIAG - Warning diagnosis
+ * STDDIAG - Standard diagnosis
+ * ERRDIAG - Error diagnosis
+ */
+
+/** Configuration Registers
+ * OUT - Output configuration
+ * RCS - Restart counter status (read only)
+ * OCR - Over-current threshold configuration
+ * RCD - Restart counter disable
+ * KRC - KILIS range control
+ * SRC - Slew rate control register (read only)
+ * HWCR - Hardware configuration
+ * ICS - Input status & checksum input
+ * PCS - Parallel channel and slew rate control
+ * DCR - Diagnostic configuration and swap bit
+ */
+
+// Configuration Registers Read Commands
+#define SPOC_READ_OUT_COMMAND 	0b00000000
+#define SPOC_READ_RCS_COMMAND 	0b00001000
+#define SPOC_READ_SRC_COMMAND 	0b00001001
+#define SPOC_READ_OCR_COMMAND 	0b00000100
+#define SPOC_READ_RCD_COMMAND 	0b00001100
+#define SPOC_READ_KRC_COMMAND 	0b00000101
+#define SPOC_READ_PCS_COMMAND 	0b00001101
+#define SPOC_READ_HWCR_COMMAND 	0b00000110
+#define SPOC_READ_ICS_COMMAND 	0b00001110
+#define SPOC_READ_DCR_COMMAND 	0b00000111
+
+// Configuration Registers Write Commands
+#define SPOC_WRITE_DCR_COMMAND 	0b11110000
+
+// Diagnostic Register Read Commands
+#define SPOC_REG_READ_WRNDIAG 0x01 // 0b00000001
+#define SPOC_REG_READ_STDDIAG 0x02 // 0b00000010
+#define SPOC_REG_READ_ERRDIAG 0x03 // 0b00000011
+
+// Decode diagnostic responses
+typedef enum {
+    SPOC_WRNDIAG_NO_ERROR 	= 0x40,
+	SPOC_WRNDIAG_CH0_ERROR 	= 0x41,
+    SPOC_WRNDIAG_CH1_ERROR 	= 0x42,
+    SPOC_WRNDIAG_CH2_ERROR 	= 0x44,
+    SPOC_WRNDIAG_CH3_ERROR 	= 0x48
+} SPOC_WRNDIAG_RESPONSE_CODE;
+
+typedef enum {
+    SPOC_ERRDIAG_NO_ERROR = 0x40,
+	SPOC_ERRDIAG_CH0_ERROR = 0x41,
+    SPOC_ERRDIAG_CH1_ERROR = 0x42,
+    SPOC_ERRDIAG_CH2_ERROR = 0x44,
+    SPOC_ERRDIAG_CH3_ERROR = 0x48
+} SPOC_ERRDIAG_RESPONSE_CODE;
+
+typedef struct _SPOC_STDDIAG_OBJ {
+	uint8_t STDDIAG_TER : 1;
+	uint8_t STDDIAG_CSV : 1;
+	uint8_t STDDIAG_LHI : 1;
+	uint8_t STDDIAG_SLP : 1;
+	uint8_t STDDIAG_SBM : 1;
+	uint8_t STDDIAG_VSMON : 1;
+} SPOC_STDDIAG_OBJ;
+
+typedef struct _SPOC_CONFIG_OBJ {
+
+};
+
+// Register definitions
+// #define SPOC_REG_ADDR0_OUT
+#define SPOC_REG_ADDR1_OUT      0x00
+
+//#define SPOC_REG_ADDR0_RCS
+#define SPOC_REG_ADDR1_RCS      0x08 // 1000
+
+//#define SPOC_REG_ADDR0_SRC
+#define SPOC_REG_ADDR1_SRC      0x09 // 1001
+
+#define SPOC_REG_ADDR0_OCR      0x00
+#define SPOC_REG_ADDR1_OCR      0x04 // 0100
+
+#define SPOC_REG_ADDR0_RCD      0x00
+#define SPOC_REG_ADDR1_RCD      0x0C // 1100
+
+#define SPOC_REG_ADDR0_KRC      0x01
+#define SPOC_REG_ADDR1_KRC      0x05 // 0101
+
+#define SPOC_REG_ADDR0_PCS      0x01
+#define SPOC_REG_ADDR1_PCS      0x0D // 1101
+
+#define SPOC_REG_ADDR0_HWCR     0x02
+#define SPOC_REG_ADDR1_HWCR     0x06 // 0110
+
+#define SPOC_REG_ADDR0_ICS      0x02
+#define SPOC_REG_ADDR1_ICS      0x0E // 1110
+
+#define SPOC_REG_ADDR0_DCR      0x03
+#define SPOC_REG_ADDR1_DCR      0x07 // x111
+
+// OPEN LOAD DETECTION
+// LIMP HOME MODE ACTIVATED
+//
+
+// ERROR CODES
+typedef enum {
+    MCP2517_NO_ERROR = 0x01,
+	MCP2517_RAM_ERROR = 0x02
+} SPOC_ERROR_CODE;
+
+//Read or Write Commmand
+//
+//OUT0
+//    OUT1
+//    OUT2
+//    OUT3
+//    extD
+//    OUT5
+
+typedef struct _SPOC_MSG_OBJ {
+	uint16_t MCP2517_SID : 11;
+	uint32_t MCP2517_EID : 18;
+	uint8_t MCP2517_SID11 : 1;
+	uint8_t MCP2517_unimplemented : 2;
+} SPOC_MSG_OBJ;
+
+// SPI write function
+
+//0x02
+//0x40
+
+//select which card to write to
+//take can message/s
+//reconstruct to match card
+//apply values to those cards
+
+// Everything that needs to happen:
+// turn on and off channels
+// read status and errors
+// set limp home mode
+
+int8_t max8(int8_t num1, int8_t num2);
+
+uint_8t BTS7XX_CofingureDCR (SPI_HandleTypeDef *hspi, uint8_t msg);
+
+void BTS7XX_ConfigureOutputs(SPI_HandleTypeDef *hspi);
+
+#endif /* BTS7XX_H */
+
+/***end of file***/

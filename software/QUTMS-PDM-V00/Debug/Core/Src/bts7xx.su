@@ -1,0 +1,2 @@
+bts7xx.c:27:1:BTS7XX_WriteRegister	40	static
+bts7xx.c:63:1:BTS7XX_ReadRegister	40	static

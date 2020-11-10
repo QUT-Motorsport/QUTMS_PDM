@@ -1,0 +1,123 @@
+/** @file module.c
+ *
+ * @brief A description of the module’s purpose.
+ *
+ * @par
+ * COPYRIGHT NOTICE: (c) 2018 Barr Group.All rights reserved.
+ */
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "bts7xx.h"
+#include "main.h"
+#include "spi.h"
+
+/*!
+ * @brief Write 8-bit configuration command to a selected card.
+ *
+ * @param[in] hspi  		The selected SPI.
+ * @param[in] command  		The register the message is to be sent to.
+ * @param[in] data			The configuration bits of the message.
+ * @param[in] GPIO_Port		The GPIO port of the card being sent the message.
+ * @param[in] GPIO_Pin		The GPIO pin of the card being sent the message.
+ *
+ * @return The SPI response from the previously sent message.
+ */
+uint8_t
+BTS7XX_WriteRegister (SPI_HandleTypeDef *hspi, uint8_t command, uint8_t *data, GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
+{
+	uint8_t TxSPIBuffer[1] = {0};
+	uint8_t RxSPIBuffer[1] = {0};
+
+//	switch(command)
+//	{
+//		case BTS7XX_WRITE_OUT_COMMAND:
+//		case BTS7XX_WRITE_DCR_COMMAND:
+//		case BTS7XX_WRITE_OCR_COMMAND:
+//		case BTS7XX_WRITE_KRC_COMMAND:
+//		case BTS7XX_WRITE_HWCR_COMMAND:
+//			TxSPIBuffer[0] = (uint8_t) (BTS7XX_WRITE_DCR_COMMAND | 0x00);
+//			HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+//			HAL_SPI_TransmitReceive(hspi, (uint8_t *)TxSPIBuffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+//			HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+//			break;
+//		case BTS7XX_WRITE_RCD_COMMAND:
+//		case BTS7XX_WRITE_PCS_COMMAND:
+//		case BTS7XX_WRITE_ICS_COMMAND:
+//			TxSPIBuffer[0] = (uint8_t) (BTS7XX_WRITE_DCR_COMMAND | 0x01);
+//			HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+//			HAL_SPI_TransmitReceive(hspi, (uint8_t *)TxSPIBuffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+//			HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+//			break;
+//	}
+
+	TxSPIBuffer[0] = (uint8_t) (command | *msg);
+
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, (uint8_t *)TxSPIBuffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+	return RxSPIBuffer[0];
+}
+
+uint8_t
+BTS7XX_ReadRegister (SPI_HandleTypeDef *hspi, uint8_t command, GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
+{
+	uint8_t RxSPIBuffer[1] = {0};
+	// Send command for register you want to read
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, (uint8_t *)command, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+	// The response from this is from the previous command,
+	// So you want to send a msg again to get the data you want
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, (uint8_t *)command, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+	return RxSPIBuffer[0];
+}
+
+
+//inline void
+//BTS7XX_WriteCommand (SPI_HandleTypeDef *hspi, uint8_t *msg, GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
+//{
+//	// Set DCR register, with SWR set to 0 - bit needs to be set for writing a register
+//	// 11110000
+//	uint8_t buffer[2] = {0, 0};
+//	uint8_t RxSPIBuffer[1] = {0};
+////	buffer[0] = (uint8_t)0xF0; // 0xF2
+////	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+////	HAL_SPI_TransmitReceive(hspi, (uint8_t *)buffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+////	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+//
+//	buffer[0] = (uint8_t)0x8F;
+//	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_RESET);
+//	HAL_SPI_TransmitReceive(hspi, (uint8_t *)buffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+//	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_SET);
+//	HAL_Delay(2000);
+//}
+
+/*** end of file ***/
+
+
+// *****************************************************************************
+// Assert the MCP2517 CS pin
+// *****************************************************************************
+//void MCP2517_assertCS() {
+//	CAN_CS_PORT &= ~(1 << CAN_CS);
+//}
+//
+//void MCP2517_deassertCS() {
+//	CAN_CS_PORT |= (1 << CAN_CS);
+//}
+//
+//inline void MCP2517_writeReg8(const uint16_t regAddr, const uint8_t value) {
+//	uint8_t buff[3] = {0};
+//
+//	buff[0] = (uint8_t) ((MCP2517_INSTRUCTION_WRITE << 4) + ((regAddr >> 8) & 0xF));
+//	buff[1] = (uint8_t) (regAddr & 0xFF);
+//	buff[2] = value;
+//
+//	MCP2517_assertCS();
+//	spi_transfer_buffer(buff, 3);
+//	MCP2517_deassertCS();
+//}

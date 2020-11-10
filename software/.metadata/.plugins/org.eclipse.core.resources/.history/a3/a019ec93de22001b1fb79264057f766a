@@ -1,0 +1,111 @@
+/** @file module.c
+ *
+ * @brief A description of the module’s purpose.
+ *
+ * @par
+ * COPYRIGHT NOTICE: (c) 2018 Barr Group.All rights reserved.
+ */
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "bts7xx.h"
+#include "main.h"
+#include "spi.h"
+
+/*!
+ * @brief Identify the larger of two 8-bit integers.
+ *
+ * @param[in] num1  The first number to be compared.
+ * @param[in] num2  The second number to be compared.
+ *
+ * @return The value of the larger number.
+ */
+int8_t
+max8 (int8_t num1, int8_t num2)
+{
+	return ((num1 > num2) ? num1 : num2);
+}
+
+// Should probably be in different file that is a layer on top of basic library
+//void BTS7XX_assertCardCS()
+//{
+//	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_RESET);
+//}
+//
+//void BTS7XX_deassertCardCS()
+//{
+//	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_SET);
+//}
+
+//buffer[0] = (uint8_t)0xF0; // 0xF2
+
+uint8_t
+BTS7XX_CofingureDCR (SPI_HandleTypeDef *hspi, uint8_t *msg) // spi, message/data, port and pin, return msg,
+{
+	// Set DCR register, with SWR set to 0 - bit needs to be set for writing a register
+	// 11110000
+	uint8_t RxSPIBuffer[1] = {0};
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, msg, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+	return RxSPIBuffer[0];
+}
+
+// OR | the bits for commands
+
+uint8_t
+BTS7XX_Write (SPI_HandleTypeDef *hspi, uint8_t *msg, GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin) // spi, message/data, port and pin, return msg,
+{
+
+	uint8_t RxSPIBuffer[1] = {0};
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, msg, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(GPIO_Port, GPIO_Pin, GPIO_PIN_SET);
+	return RxSPIBuffer[0];
+}
+
+
+void BTS7XX_ConfigureOutputs (SPI_HandleTypeDef *hspi) // buffer
+{
+	// Set DCR register, with SWR set to 0 - bit needs to be set for writing a register
+	// 11110000
+	uint8_t buffer[2] = {0, 0};
+	uint8_t RxSPIBuffer[1] = {0};
+//	buffer[0] = (uint8_t)0xF0; // 0xF2
+//	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+//	HAL_SPI_TransmitReceive(hspi, (uint8_t *)buffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+//	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+
+	buffer[0] = (uint8_t)0x8F;
+	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_RESET);
+	HAL_SPI_TransmitReceive(hspi, (uint8_t *)buffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+	HAL_GPIO_WritePin(PDMC_CS8_GPIO_Port, PDMC_CS8_Pin, GPIO_PIN_SET);
+	HAL_Delay(2000);
+}
+
+/*** end of file ***/
+
+
+// *****************************************************************************
+// Assert the MCP2517 CS pin
+// *****************************************************************************
+//void MCP2517_assertCS() {
+//	CAN_CS_PORT &= ~(1 << CAN_CS);
+//}
+//
+//void MCP2517_deassertCS() {
+//	CAN_CS_PORT |= (1 << CAN_CS);
+//}
+//
+//inline void MCP2517_writeReg8(const uint16_t regAddr, const uint8_t value) {
+//	uint8_t buff[3] = {0};
+//
+//	buff[0] = (uint8_t) ((MCP2517_INSTRUCTION_WRITE << 4) + ((regAddr >> 8) & 0xF));
+//	buff[1] = (uint8_t) (regAddr & 0xFF);
+//	buff[2] = value;
+//
+//	MCP2517_assertCS();
+//	spi_transfer_buffer(buff, 3);
+//	MCP2517_deassertCS();
+//}
