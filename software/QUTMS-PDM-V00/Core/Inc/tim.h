@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : CAN.h
+  * File Name          : TIM.h
   * Description        : This file provides code for the configuration
-  *                      of the CAN instances.
+  *                      of the TIM instances.
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __can_H
-#define __can_H
+#ifndef __tim_H
+#define __tim_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -30,23 +30,22 @@
 
 /* USER CODE END Includes */
 
-extern CAN_HandleTypeDef hcan;
+extern TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_CAN_Init(void);
+void MX_TIM2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void Configure_CAN(CAN_HandleTypeDef* canHandle);
 
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ can_H */
+#endif /*__ tim_H */
 
 /**
   * @}
