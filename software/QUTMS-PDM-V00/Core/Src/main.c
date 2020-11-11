@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -33,6 +33,7 @@
 /* USER CODE BEGIN Includes */
 //#include "fatfs.h"
 #include "bts7xx.h"
+#include "PDM_CAN_Messages.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,7 +43,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define NUM_CARDS 8
+#define NUM_CHANNELS 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +55,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+GPIO_TypeDef * card_ports[4] = {PDMC_CS7_GPIO_Port, PDMC_CS6_GPIO_Port, PDMC_CS1_GPIO_Port, PDMC_CS5_GPIO_Port};
+uint16_t card_pins[4] = {PDMC_CS7_Pin, PDMC_CS6_Pin, PDMC_CS1_Pin, PDMC_CS5_Pin};
+
 //SPI_HandleTypeDef hspi2;
 /* USER CODE END PV */
 
@@ -64,9 +69,9 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t current_state = 0;
-void set_channel_states(uint32_t powerChannels);
 
+uint8_t current_state[NUM_CARDS];
+void set_channel_states(uint32_t powerChannels);
 
 /* USER CODE END 0 */
 
@@ -108,108 +113,173 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_DEVICE_Init();
   MX_FATFS_Init();
-
   /* USER CODE BEGIN 2 */
-  current_state = 0;
-  HAL_GPIO_WritePin(PDMC_CS5_GPIO_Port, PDMC_CS5_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(PDMC_CS6_GPIO_Port, PDMC_CS6_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(PDMC_CS1_GPIO_Port, PDMC_CS1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(PDMC_CS7_GPIO_Port, PDMC_CS7_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PDMC_CS5_GPIO_Port, PDMC_CS5_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PDMC_CS6_GPIO_Port, PDMC_CS6_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PDMC_CS1_GPIO_Port, PDMC_CS1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PDMC_CS7_GPIO_Port, PDMC_CS7_Pin, GPIO_PIN_SET);
 
-  uint8_t buffer[1] = {0};
-  uint8_t receiveBuff[1] = {0};
-  buffer[0] = (uint8_t)0x00;
-  receiveBuff[0] = (uint8_t)0x00;
+	uint8_t buffer[1] = { 0 };
+	uint8_t receiveBuff[1] = { 0 };
+	buffer[0] = (uint8_t) 0x00;
+	receiveBuff[0] = (uint8_t) 0x00;
 
-  uint16_t Tx16SPIBuffer[1] = {0};
-  uint16_t RxSPIBuffer[1] = {0};
-  Tx16SPIBuffer[0] = 0xFFFF;
-  RxSPIBuffer[0] = 0xFFFF;
-  HAL_SPI_TransmitReceive(&hspi2, (uint8_t*)Tx16SPIBuffer, (uint8_t *)RxSPIBuffer, 1, 1000);
+	uint16_t Tx16SPIBuffer[1] = { 0 };
+	uint16_t RxSPIBuffer[1] = { 0 };
+	Tx16SPIBuffer[0] = 0xFFFF;
+	RxSPIBuffer[0] = 0xFFFF;
+	HAL_SPI_TransmitReceive(&hspi2, (uint8_t*) Tx16SPIBuffer,
+			(uint8_t*) RxSPIBuffer, 1, 1000);
 
 //  Set DCR register, with SWR set to 0 - bit needs to be set for writing a register
-  buffer[0] = (uint8_t)0x00;
-  receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-  receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-  receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-  receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+	buffer[0] = (uint8_t) 0x00;
+	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND,
+			(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND,
+			(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND,
+			(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_DCR_COMMAND,
+			(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
 
 //  BTS7XX_OCR_OBJ ocrObj;
 
-  // Configure channels
+// Configure channels
 
+	// start can
+	if (HAL_CAN_Start(&hcan) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+
+	// setup messages
+	PDM_Heartbeat_t heartbeat_msg;
+	CAN_TxHeaderTypeDef header = { 0 };
+	header.IDE = CAN_ID_EXT;
+	header.RTR = CAN_RTR_DATA;
+	header.TransmitGlobalTime = DISABLE;
+	HAL_StatusTypeDef result;
+	uint32_t txMailbox = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
+		// read current state
 
-	buffer[0] = BTS7XX_OUT_CH1;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		set_channel_states( 0b0101010101010101);
+		heartbeat_msg = Compose_PDM_Heartbeat(current_state);
+		header.ExtId = heartbeat_msg.id;
+		header.DLC = sizeof(heartbeat_msg.data);
+		result = HAL_CAN_AddTxMessage(&hcan, &header, heartbeat_msg.data, &txMailbox);
 
-	buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
 
-	buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+/*
 
-	buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3 | BTS7XX_OUT_CH4;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		buffer[0] = BTS7XX_OUT_CH1;
 
-	buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		// 1
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+						(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
 
-	buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		// 2
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+						(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
 
-	buffer[0] = BTS7XX_OUT_CH1;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		// 3
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+						(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
 
-	receiveBuff[0] = BTS7XX_ReadRegister(&hspi2, BTS7XX_READ_OUT_COMMAND, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		// 4
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+*/
+		HAL_Delay(500);
+		set_channel_states( 0);
 
-	buffer[0] = 0x00;
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, (uint8_t *)buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	HAL_Delay(500);
+		heartbeat_msg = Compose_PDM_Heartbeat(current_state);
+		header.ExtId = heartbeat_msg.id;
+		header.DLC = sizeof(heartbeat_msg.data);
+		result = HAL_CAN_AddTxMessage(&hcan, &header, heartbeat_msg.data, &txMailbox);
+		/*
+
+		buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3
+				| BTS7XX_OUT_CH4;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2 | BTS7XX_OUT_CH3;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		buffer[0] = BTS7XX_OUT_CH1 | BTS7XX_OUT_CH2;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		buffer[0] = BTS7XX_OUT_CH1;
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+		receiveBuff[0] = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND,
+				(uint8_t*) buffer, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+		HAL_Delay(500);
+
+		*/
+
+		HAL_Delay(500);
 //
 //	ocrObj.OCR_OCT0 = 1;
 
-
-
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -270,26 +340,30 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void set_channel_states(uint32_t powerChannels) {
 	// pull out each of the 8 channels
-	uint8_t card0 = (powerChannels >> 4*0) & 0xF;
-	uint8_t card1 = (powerChannels >> 4*1) & 0xF;
-	uint8_t card2 = (powerChannels >> 4*2) & 0xF;
-	uint8_t card3 = (powerChannels >> 4*3) & 0xF;
-	uint8_t card4 = (powerChannels >> 4*4) & 0xF;
-	uint8_t card5 = (powerChannels >> 4*5) & 0xF;
-	uint8_t card6 = (powerChannels >> 4*6) & 0xF;
-	uint8_t card7 = (powerChannels >> 4*7) & 0xF;
+	current_state[0] = (powerChannels >> 4 * 0) & 0xF;
+	current_state[1] = (powerChannels >> 4 * 1) & 0xF;
+	current_state[2] = (powerChannels >> 4 * 2) & 0xF;
+	current_state[3] = (powerChannels >> 4 * 3) & 0xF;
+	current_state[4] = (powerChannels >> 4 * 4) & 0xF;
+	current_state[5] = (powerChannels >> 4 * 5) & 0xF;
+	current_state[6] = (powerChannels >> 4 * 6) & 0xF;
+	current_state[7] = (powerChannels >> 4 * 7) & 0xF;
 
+	// set states physically
+	for (int i = 0; i < 4; i++) {
+		BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &current_state[i], card_ports[i], card_pins[i]);
+	}
+}
 
-	// set all 8 channels
-	uint8_t receive_buff = 0;
-	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card0, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
-	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card1, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
-	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card2, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
-	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card3, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
-	// TODO: when we have the other 4 cards lol
+void read_channel_states(uint8_t channels[8]) {
+	for (int i = 0; i < 4; i++) {
+		channels[i] = BTS7XX_ReadRegister(&hspi2, BTS7XX_READ_OUT_COMMAND,
+				card_ports[i], card_pins[i]);
+	}
 
-	// save the new state for reference
-	current_state = powerChannels;
+	for (int i = 4; i < 8; i++) {
+		channels[i] = 0;
+	}
 }
 
 /* USER CODE END 4 */
@@ -301,7 +375,7 @@ void set_channel_states(uint32_t powerChannels) {
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
