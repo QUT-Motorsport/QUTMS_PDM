@@ -149,7 +149,7 @@ int main(void) {
 	//  BTS7XX_OCR_OBJ ocrObj;
 
 	// Configure channels - everything start off??
-	set_channel_states(0);
+	//set_channel_states(0);
 
 	// start can
 	Configure_CAN(&hcan);
@@ -179,7 +179,7 @@ int main(void) {
 	// wait for select startup
 	HAL_Delay(1000);
 
-	set_channel_states(0b010101010101010);
+	set_channel_states(0b01010101010101011);
 
 	// start heartbeat timer
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) {

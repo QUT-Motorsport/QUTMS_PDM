@@ -117,14 +117,14 @@ void Configure_CAN(CAN_HandleTypeDef* canHandle) {
 	// TODO: IS THIS CORRECT LMAO
 
 	// what bits of the CAN ID do we care about
-	sFilterConfig.FilterMaskIdHigh = 0;//(CAN_MASK_SRC_ID & 0xFFFF) >> (16 - 3);
-	sFilterConfig.FilterMaskIdLow = 0;//(CAN_MASK_SRC_ID & 0xFFFF) << 3;
+	sFilterConfig.FilterMaskIdHigh = (CAN_MASK_SRC_ID & 0xFFFF) >> 16;
+	sFilterConfig.FilterMaskIdLow = (CAN_MASK_SRC_ID & 0xFFFF);
 
 
 
 	// what values do we want
-	sFilterConfig.FilterIdHigh = 0;//(CAN_SRC_ID_PDM & 0xFFFF) >> (16 - 3);
-	sFilterConfig.FilterIdLow = 0;//(CAN_SRC_ID_PDM & 0xFFFF) << 3;
+	sFilterConfig.FilterIdHigh = (CAN_SRC_ID_PDM & 0xFFFF) >> 16;
+	sFilterConfig.FilterIdLow = (CAN_SRC_ID_PDM & 0xFFFF);
 
 	sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
 	sFilterConfig.FilterActivation = ENABLE;
