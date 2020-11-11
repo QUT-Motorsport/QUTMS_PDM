@@ -1,0 +1,3 @@
+[submodule "software/QUTMS-PDM-V00/Core/Common"]
+	path = software/QUTMS-PDM-V00/Core/Common
+	url = https://github.com/QUT-Motorsport/QUTMS_Embedded_Common.git
