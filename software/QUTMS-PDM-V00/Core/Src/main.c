@@ -64,6 +64,9 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint32_t current_state = 0;
+void set_channel_states(uint32_t powerChannels);
+
 
 /* USER CODE END 0 */
 
@@ -107,6 +110,7 @@ int main(void)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN 2 */
+  current_state = 0;
   HAL_GPIO_WritePin(PDMC_CS5_GPIO_Port, PDMC_CS5_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(PDMC_CS6_GPIO_Port, PDMC_CS6_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(PDMC_CS1_GPIO_Port, PDMC_CS1_Pin, GPIO_PIN_SET);
@@ -264,6 +268,29 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void set_channel_states(uint32_t powerChannels) {
+	// pull out each of the 8 channels
+	uint8_t card0 = (powerChannels >> 4*0) & 0xF;
+	uint8_t card1 = (powerChannels >> 4*1) & 0xF;
+	uint8_t card2 = (powerChannels >> 4*2) & 0xF;
+	uint8_t card3 = (powerChannels >> 4*3) & 0xF;
+	uint8_t card4 = (powerChannels >> 4*4) & 0xF;
+	uint8_t card5 = (powerChannels >> 4*5) & 0xF;
+	uint8_t card6 = (powerChannels >> 4*6) & 0xF;
+	uint8_t card7 = (powerChannels >> 4*7) & 0xF;
+
+
+	// set all 8 channels
+	uint8_t receive_buff = 0;
+	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card0, PDMC_CS5_GPIO_Port, PDMC_CS5_Pin);
+	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card1, PDMC_CS6_GPIO_Port, PDMC_CS6_Pin);
+	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card2, PDMC_CS1_GPIO_Port, PDMC_CS1_Pin);
+	receive_buff = BTS7XX_WriteRegister(&hspi2, BTS7XX_WRITE_OUT_COMMAND, &card3, PDMC_CS7_GPIO_Port, PDMC_CS7_Pin);
+	// TODO: when we have the other 4 cards lol
+
+	// save the new state for reference
+	current_state = powerChannels;
+}
 
 /* USER CODE END 4 */
 
