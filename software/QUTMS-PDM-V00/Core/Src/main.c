@@ -166,7 +166,25 @@ int main(void) {
 	// startup sequence
 
 	// wait for initiate startup
-	HAL_Delay(1000);
+	uint8_t wait_flag = 0;
+	while (!wait_flag) {
+		while (HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0) > 0) {
+			// pull msg out
+			CAN_MSG_Generic_t msg;
+			HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &(msg.header), msg.data);
+			uint32_t init_startup_id = Compose_CANId(CAN_PRIORITY_NORMAL,
+			CAN_SRC_ID_PDM, 0x0,
+			CAN_TYPE_RECEIVE, 0x00, 0x0);
+			// PDM_SetChannelStates
+			if (msg.header.ExtId == init_startup_id) {
+				wait_flag = 1;
+				break;
+			}
+
+		}
+
+		HAL_Delay(1);
+	}
 
 	// send startup ok
 	current_state = read_channel_states();
@@ -176,8 +194,33 @@ int main(void) {
 	result = HAL_CAN_AddTxMessage(&hcan, &header, startupOk_msg.data,
 			&txMailbox);
 
+	/*
 	// wait for select startup
-	HAL_Delay(1000);
+	wait_flag = 0;
+	while (!wait_flag) {
+		while (HAL_CAN_GetRxFifoFillLevel(&hcan, CAN_RX_FIFO0) > 0) {
+			// pull msg out
+			CAN_MSG_Generic_t msg;
+			HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &(msg.header), msg.data);
+			uint32_t select_startup_id = Compose_CANId(CAN_PRIORITY_NORMAL,
+					CAN_SRC_ID_PDM, 0x0, CAN_TYPE_TRANSMIT, 0x00, 0x1);
+			// PDM_SetChannelStates
+			if (msg.header.ExtId == select_startup_id) {
+				wait_flag = 1;
+
+				uint32_t set_channels = 0;
+				Parse_PDM_SelectStartup(msg.data, &set_channels);
+
+				set_channel_states(set_channels);
+
+				break;
+			}
+
+		}
+
+		HAL_Delay(1);
+	}
+	*/
 
 	set_channel_states(0b01010101010101011);
 
@@ -209,8 +252,9 @@ int main(void) {
 			// pull msg out
 			CAN_MSG_Generic_t msg;
 			HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &(msg.header), msg.data);
-			uint32_t setchannelID = Compose_CANId(CAN_PRIORITY_NORMAL, CAN_SRC_ID_PDM, 0x0,
-					CAN_TYPE_RECEIVE, 0x00, 0x02);
+			uint32_t setchannelID = Compose_CANId(CAN_PRIORITY_NORMAL,
+			CAN_SRC_ID_PDM, 0x0,
+			CAN_TYPE_RECEIVE, 0x00, 0x02);
 
 			// PDM_SetChannelStates
 			if (msg.header.ExtId == setchannelID) {
