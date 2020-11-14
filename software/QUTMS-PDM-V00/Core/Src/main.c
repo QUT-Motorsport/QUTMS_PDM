@@ -45,7 +45,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUM_CARDS_USED 4
+#define NUM_CARDS_USED 8
 #define NUM_CARDS 8
 #define NUM_CHANNELS 4
 /* USER CODE END PD */
@@ -59,9 +59,9 @@
 
 /* USER CODE BEGIN PV */
 GPIO_TypeDef *card_ports[NUM_CARDS_USED] = { PDMC_CS7_GPIO_Port,
-PDMC_CS6_GPIO_Port, PDMC_CS1_GPIO_Port, PDMC_CS5_GPIO_Port };
-uint16_t card_pins[NUM_CARDS_USED] = { PDMC_CS7_Pin, PDMC_CS6_Pin, PDMC_CS1_Pin,
-PDMC_CS5_Pin };
+PDMC_CS6_GPIO_Port, PDMC_CS1_GPIO_Port, PDMC_CS5_GPIO_Port, PDMC_CS2_GPIO_Port, PDMC_CS4_GPIO_Port, PDMC_CS3_GPIO_Port, PDMC_CS8_GPIO_Port};
+uint16_t card_pins[NUM_CARDS_USED] = { PDMC_CS7_Pin,
+		PDMC_CS6_Pin, PDMC_CS1_Pin, PDMC_CS5_Pin, PDMC_CS2_Pin, PDMC_CS4_Pin, PDMC_CS3_Pin, PDMC_CS8_Pin};
 
 //SPI_HandleTypeDef hspi2;
 /* USER CODE END PV */
@@ -82,49 +82,50 @@ uint32_t read_channel_states();
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
-int main(void) {
-	/* USER CODE BEGIN 1 */
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_ADC1_Init();
-	MX_ADC2_Init();
-	MX_CAN_Init();
-	MX_I2C1_Init();
-	MX_RTC_Init();
-	MX_SPI2_Init();
-	MX_SPI3_Init();
-	MX_USART2_UART_Init();
-	MX_USB_DEVICE_Init();
-	MX_FATFS_Init();
-	MX_TIM2_Init();
-
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_ADC1_Init();
+  MX_ADC2_Init();
+  MX_CAN_Init();
+  MX_I2C1_Init();
+  MX_RTC_Init();
+  MX_SPI2_Init();
+  MX_SPI3_Init();
+  MX_USART2_UART_Init();
+  MX_USB_DEVICE_Init();
+  MX_FATFS_Init();
+  MX_TIM2_Init();
+  /* USER CODE BEGIN 2 */
 	HAL_GPIO_WritePin(PDMC_CS5_GPIO_Port, PDMC_CS5_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PDMC_CS6_GPIO_Port, PDMC_CS6_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PDMC_CS1_GPIO_Port, PDMC_CS1_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PDMC_CS7_GPIO_Port, PDMC_CS7_Pin, GPIO_PIN_SET);
+
 
 	uint8_t buffer[1] = { 0 };
 	uint8_t receiveBuff[1] = { 0 };
@@ -149,7 +150,13 @@ int main(void) {
 	//  BTS7XX_OCR_OBJ ocrObj;
 
 	// Configure channels - everything start off??
-	//set_channel_states(0);
+	set_channel_states(0);
+//	for(int i = 0; i < 32; i++)
+//	{
+//		uint32_t x = 1 << (i);
+//		set_channel_states(x);
+//		HAL_Delay(200);
+//	}
 
 	// start can
 	Configure_CAN(&hcan);
@@ -222,17 +229,19 @@ int main(void) {
 	}
 	*/
 
-	set_channel_states(0b01010101010101011);
+//	set_channel_states(0b01010101010101011);
+//	set_channel_states(0b01010101010101011010101010101010);
+//	set_channel_states(0b11111111111111111111111111111111);
 
 	// start heartbeat timer
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) {
 		Error_Handler();
 	}
 
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1) {
 		// read current state
 		current_state = read_channel_states();
@@ -254,13 +263,15 @@ int main(void) {
 			HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &(msg.header), msg.data);
 			uint32_t setchannelID = Compose_CANId(CAN_PRIORITY_NORMAL,
 			CAN_SRC_ID_PDM, 0x0,
-			CAN_TYPE_RECEIVE, 0x00, 0x02);
+			CAN_TYPE_RECEIVE, 0x02, 0x00);
 
 			// PDM_SetChannelStates
 			if (msg.header.ExtId == setchannelID) {
 				uint32_t set_channels = 0;
 				Parse_PDM_SetChannelStates(msg.data, &set_channels);
-
+				char x[80];
+				int len = snprintf(x, 80, "States: 0x%lX\r\n", set_channels);
+				HAL_UART_Transmit(&huart2, x, len, HAL_MAX_DELAY);
 				set_channel_states(set_channels);
 			}
 
@@ -268,61 +279,65 @@ int main(void) {
 //
 //	ocrObj.OCR_OCT0 = 1;
 
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
-void SystemClock_Config(void) {
-	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-	/** Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI
-			| RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI
+                              |RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
-		Error_Handler();
-	}
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB
-			| RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_RTC
-			| RCC_PERIPHCLK_ADC12;
-	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-	PeriphClkInit.Adc12ClockSelection = RCC_ADC12PLLCLK_DIV1;
-	PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
-	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-	PeriphClkInit.USBClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-		Error_Handler();
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_USART2
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC
+                              |RCC_PERIPHCLK_ADC12;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.Adc12ClockSelection = RCC_ADC12PLLCLK_DIV1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.USBClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -351,14 +366,15 @@ uint32_t read_channel_states() {
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
-void Error_Handler(void) {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
