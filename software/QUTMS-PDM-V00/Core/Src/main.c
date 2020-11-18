@@ -151,12 +151,11 @@ int main(void)
 
 	// Configure channels - everything start off??
 	set_channel_states(0);
-//	for(int i = 0; i < 32; i++)
-//	{
-//		uint32_t x = 1 << (i);
-//		set_channel_states(x);
-//		HAL_Delay(200);
-//	}
+	// Configure channels to enable CC
+	set_channel_states(PDM_POWER_CC_MASK);
+
+	//Test by setting all states high
+//	set_channel_states(UINT32_MAX);
 
 	// start can
 	Configure_CAN(&hcan);
@@ -229,10 +228,6 @@ int main(void)
 	}
 	*/
 
-//	set_channel_states(0b01010101010101011);
-//	set_channel_states(0b01010101010101011010101010101010);
-//	set_channel_states(0b11111111111111111111111111111111);
-
 	// start heartbeat timer
 	if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK) {
 		Error_Handler();
@@ -269,9 +264,9 @@ int main(void)
 			if (msg.header.ExtId == setchannelID) {
 				uint32_t set_channels = 0;
 				Parse_PDM_SetChannelStates(msg.data, &set_channels);
-				char x[80];
-				int len = snprintf(x, 80, "States: 0x%lX\r\n", set_channels);
-				HAL_UART_Transmit(&huart2, x, len, HAL_MAX_DELAY);
+//				char x[80];
+//				int len = snprintf(x, 80, "States: 0x%lX\r\n", set_channels);
+//				HAL_UART_Transmit(&huart2, x, len, HAL_MAX_DELAY);
 				set_channel_states(set_channels);
 			}
 
