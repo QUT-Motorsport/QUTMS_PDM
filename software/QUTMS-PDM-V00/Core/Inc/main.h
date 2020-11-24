@@ -32,6 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "PDM_CAN_Messages.h"
 
 /* USER CODE END Includes */
 
@@ -42,6 +43,13 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+extern volatile uint32_t current_state;
+extern volatile uint32_t user_channels;
+extern volatile uint32_t pwm_channels;
+
+extern volatile uint8_t user_dutycycles[32];
+extern volatile uint8_t current_dutycycles[32];
+
 
 /* USER CODE END EC */
 
@@ -54,7 +62,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void set_channel_states(uint32_t powerChannels);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -101,6 +109,9 @@ void Error_Handler(void);
 #define PDMC_CS6_Pin GPIO_PIN_11
 #define PDMC_CS6_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+
+#define PWM_CHANNELS (PDMFLAG_ACU_FAN | PDMFLAG_LEFT_FAN | PDMFLAG_RIGHT_FAN)
+#define MAX_DUTY_CYCLE 100
 
 /* USER CODE END Private defines */
 
