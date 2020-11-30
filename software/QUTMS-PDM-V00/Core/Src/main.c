@@ -129,6 +129,10 @@ int main(void) {
 	MX_TIM3_Init();
 	MX_TIM4_Init();
 	/* USER CODE BEGIN 2 */
+
+	// start can
+	Configure_CAN(&hcan);
+
 	HAL_GPIO_WritePin(PDMC_CS5_GPIO_Port, PDMC_CS5_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PDMC_CS6_GPIO_Port, PDMC_CS6_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PDMC_CS1_GPIO_Port, PDMC_CS1_Pin, GPIO_PIN_SET);
@@ -166,9 +170,6 @@ int main(void) {
 
 	//Test by setting all states high
 //	set_channel_states(UINT32_MAX);
-
-// start can
-	Configure_CAN(&hcan);
 
 	uint32_t init_startup_id = Compose_CANId(CAN_PRIORITY_NORMAL, CAN_SRC_ID_PDM, 0x0, CAN_TYPE_RECEIVE, 0x00, 0x0);
 	uint32_t setchannelID = Compose_CANId(CAN_PRIORITY_NORMAL, CAN_SRC_ID_PDM, 0x0, CAN_TYPE_RECEIVE, 0x02, 0x00);
