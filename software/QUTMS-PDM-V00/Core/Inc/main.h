@@ -112,6 +112,9 @@ void set_channel_states(uint32_t powerChannels);
 
 #define PWM_CHANNELS (PDMFLAG_ACU_FAN | PDMFLAG_LEFT_FAN | PDMFLAG_RIGHT_FAN)
 #define MAX_DUTY_CYCLE 100
+#define MAX_15bit 32768
+#define ACCEL_RANGE 2
+#define GYR_RANGE 2000
 
 /* USER CODE END Private defines */
 

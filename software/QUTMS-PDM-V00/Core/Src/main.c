@@ -248,44 +248,39 @@ int main(void) {
 		Error_Handler();
 	}
 
-	/* USER CODE END 2 */
-
-
-	/* BMI160 INITIALIZATION START */
-
 	struct bmi160_dev sensor;
 
-	sensor.id = BMI160_I2C_ADDR;
-	sensor.interface = BMI160_I2C_INTF;
-	sensor.read = bmi_read_i2c;
-	sensor.write = bmi_write_i2c;
-	sensor.delay_ms = bmi_delay_i2c;
+		sensor.id = BMI160_I2C_ADDR;
+		sensor.interface = BMI160_I2C_INTF;
+		sensor.read = bmi_read_i2c;
+		sensor.write = bmi_write_i2c;
+		sensor.delay_ms = bmi_delay_i2c;
 
-	int8_t rslt = BMI160_OK;
-	rslt = bmi160_init(&sensor);
+		int8_t rslt = BMI160_OK;
+		rslt = bmi160_init(&sensor);
 
-	rslt = BMI160_OK;
+		rslt = BMI160_OK;
 
-	/* Select the Output data rate, range of accelerometer sensor */
-	sensor.accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
-	sensor.accel_cfg.range = BMI160_ACCEL_RANGE_2G;
-	sensor.accel_cfg.bw = BMI160_ACCEL_BW_NORMAL_AVG4;
+		/* Select the Output data rate, range of accelerometer sensor */
+		sensor.accel_cfg.odr = BMI160_ACCEL_ODR_1600HZ;
+		sensor.accel_cfg.range = BMI160_ACCEL_RANGE_2G;
+		sensor.accel_cfg.bw = BMI160_ACCEL_BW_NORMAL_AVG4;
 
-	/* Select the power mode of accelerometer sensor */
-	sensor.accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
+		/* Select the power mode of accelerometer sensor */
+		sensor.accel_cfg.power = BMI160_ACCEL_NORMAL_MODE;
 
-	/* Select the Output data rate, range of Gyroscope sensor */
-	sensor.gyro_cfg.odr = BMI160_GYRO_ODR_3200HZ;
-	sensor.gyro_cfg.range = BMI160_GYRO_RANGE_2000_DPS;
-	sensor.gyro_cfg.bw = BMI160_GYRO_BW_NORMAL_MODE;
+		/* Select the Output data rate, range of Gyroscope sensor */
+		sensor.gyro_cfg.odr = BMI160_GYRO_ODR_3200HZ;
+		sensor.gyro_cfg.range = BMI160_GYRO_RANGE_2000_DPS;
+		sensor.gyro_cfg.bw = BMI160_GYRO_BW_NORMAL_MODE;
 
-	/* Select the power mode of Gyroscope sensor */
-	sensor.gyro_cfg.power = BMI160_GYRO_NORMAL_MODE;
+		/* Select the power mode of Gyroscope sensor */
+		sensor.gyro_cfg.power = BMI160_GYRO_NORMAL_MODE;
 
-	/* Set the sensor configuration */
-	rslt = bmi160_set_sens_conf(&sensor);
+		/* Set the sensor configuration */
+		rslt = bmi160_set_sens_conf(&sensor);
 
-	/* BMI160 INITIALIZATION END */
+	/* USER CODE END 2 */
 
 
 	/* After the above function call, accel and gyro parameters in the device structure
@@ -299,24 +294,36 @@ int main(void) {
 
 	while (1) {
 
-		int8_t rslt = BMI160_OK;
+		int8_t a_rslt = BMI160_OK;
+		int8_t g_rslt = BMI160_OK;
 		struct bmi160_sensor_data accel;
 		struct bmi160_sensor_data gyro;
 
-		/* To read only Accel data */
-		rslt = bmi160_get_sensor_data(BMI160_ACCEL_SEL, &accel, NULL, &sensor);
+		// Read Accel data
+		a_rslt = bmi160_get_sensor_data(BMI160_ACCEL_SEL, &accel, NULL, &sensor);
 
-		//sprintf(msg, "r: %d, a: (%d,\t%d,\t%d).\r\n", rslt, accel.x,accel.y,accel.z);
-		//HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen((char*) msg),HAL_MAX_DELAY);
+		int16_t acc_x = (accel.x)*9.8/(MAX_15bit / ACCEL_RANGE); // sensitivity = (2^15)/(range*9.8) = 16384/9.8
+		int16_t acc_y = (accel.y)*9.8/(MAX_15bit / ACCEL_RANGE);
+		int16_t acc_z = (accel.z)*9.8/(MAX_15bit / ACCEL_RANGE);
+
+		sprintf(msg, "Acc - r: %d, a: (%d,\t%d,\t%d) m/s^2.\r\n", a_rslt, acc_x,acc_y,acc_z);
+		HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen((char*) msg),HAL_MAX_DELAY);
 		i++;
 
 		HAL_Delay(100);
 
-		/* To read only Gyro data */
-		rslt = bmi160_get_sensor_data(BMI160_GYRO_SEL, NULL, &gyro, &sensor);
-		sprintf(msg, "r: %d, a: (%d,\t%d,\t%d).\r\n", rslt, gyro.x,gyro.y,gyro.z);
+		// Read Gyro data
+
+		g_rslt = bmi160_get_sensor_data(BMI160_GYRO_SEL, NULL, &gyro, &sensor);
+
+		int16_t gyr_x = (gyro.x)*GYR_RANGE/MAX_15bit; // sensitivity = (2^15)/range
+		int16_t gyr_y = (gyro.y)*GYR_RANGE/MAX_15bit;
+		int16_t gyr_z = (gyro.z)*GYR_RANGE/MAX_15bit;
+
+		sprintf(msg, "Gyr - r: %d, a: (%d,\t%d,\t%d) °/s.\r\n", g_rslt, gyr_x,gyr_y,gyr_z);
 				HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen((char*) msg),
 				HAL_MAX_DELAY);
+
 
 		// read current state
 		current_state = read_channel_states();
@@ -364,6 +371,12 @@ int main(void) {
 			}
 
 		}
+
+		// Construct CAN message for accelerometer values
+
+
+
+
 
 		/* USER CODE END WHILE */
 
